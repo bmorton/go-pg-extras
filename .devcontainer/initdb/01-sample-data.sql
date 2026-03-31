@@ -17,6 +17,9 @@ CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 -- Enable sslinfo for ssl_used query
 CREATE EXTENSION IF NOT EXISTS sslinfo;
 
+-- Enable pg_buffercache for buffercache_stats and buffercache_usage queries
+CREATE EXTENSION IF NOT EXISTS pg_buffercache;
+
 -- =============================================================================
 -- 1. orders: a well-indexed, heavily-used table
 -- =============================================================================
