@@ -96,7 +96,7 @@ func runQuery[T any](ctx context.Context, db *sql.DB, query string) ([]T, error)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	cols, err := rows.Columns()
 	if err != nil {

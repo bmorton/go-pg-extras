@@ -1,4 +1,4 @@
-.PHONY: build run test test-integration lint vet fmt clean help serve list check tailwind generate-traffic
+.PHONY: build run test test-integration lint fix vet fmt clean help serve list check tailwind generate-traffic
 
 # Connection
 DATABASE_URL ?= postgres://pgextras:pgextras@db:5432/pgextras_test?sslmode=disable
@@ -40,6 +40,10 @@ test-integration:
 ## lint: Run golangci-lint
 lint:
 	golangci-lint run ./...
+
+## fix: Run golangci-lint with auto-fix
+fix:
+	golangci-lint run --fix ./...
 
 ## vet: Run go vet
 vet:

@@ -20,7 +20,7 @@ func diagnoseCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			defer db.Close()
+			defer func() { _ = db.Close() }()
 
 			ctx := context.Background()
 			results, err := client.Diagnose(ctx)

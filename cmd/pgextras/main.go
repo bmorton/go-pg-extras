@@ -72,7 +72,7 @@ func openClient(c *cli.Context) (*pgextras.Client, *sql.DB, error) {
 		Schema: c.String("schema"),
 	})
 	if err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, nil, err
 	}
 	return client, db, nil
@@ -94,7 +94,7 @@ func runQueryCLI(c *cli.Context, name string) error {
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	ctx := context.Background()
 	format := parseFormat(c.String("format"))

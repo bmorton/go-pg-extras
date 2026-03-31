@@ -82,7 +82,7 @@ func serveCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			defer db.Close()
+			defer func() { _ = db.Close() }()
 
 			logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 
@@ -111,11 +111,11 @@ func serveCommand() *cli.Command {
 			mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 				if err := db.PingContext(r.Context()); err != nil {
 					w.WriteHeader(http.StatusServiceUnavailable)
-					json.NewEncoder(w).Encode(map[string]string{"status": "error", "error": err.Error()})
+					_ = json.NewEncoder(w).Encode(map[string]string{"status": "error", "error": err.Error()})
 					return
 				}
 				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+				_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 			})
 
 			addr := c.String("addr")

@@ -78,7 +78,7 @@ func NewHandler(client *pgextras.Client, opts HandlerOptions) http.Handler {
 			w.Header().Set("Content-Type", "text/css; charset=utf-8")
 		}
 		w.Header().Set("Cache-Control", "public, max-age=86400")
-		w.Write(data)
+		_, _ = w.Write(data)
 	})
 
 	mux.HandleFunc(prefix+"/query/", func(w http.ResponseWriter, r *http.Request) {
@@ -286,7 +286,7 @@ func renderLayout(w http.ResponseWriter, tmpl *template.Template, name string, d
 func writeJSON(w http.ResponseWriter, code int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(v)
+	_ = json.NewEncoder(w).Encode(v)
 }
 
 // executeQuery runs a named query and returns headers and string rows for HTML display.
