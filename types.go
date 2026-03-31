@@ -268,22 +268,24 @@ type AnalyzeProgressResult struct {
 }
 
 // VacuumIOStatsResult holds autovacuum I/O statistics (PG 16+).
+// Many pg_stat_io columns can be NULL when I/O operations are not tracked
+// for a given backend_type/object/context combination.
 type VacuumIOStatsResult struct {
 	BackendType   string  `db:"backend_type" json:"backend_type"`
 	Object        string  `db:"object" json:"object"`
 	Context       string  `db:"context" json:"context"`
-	Reads         int64   `db:"reads" json:"reads"`
-	ReadTime      string  `db:"read_time" json:"read_time"`
-	Writes        int64   `db:"writes" json:"writes"`
-	WriteTime     string  `db:"write_time" json:"write_time"`
-	Writebacks    int64   `db:"writebacks" json:"writebacks"`
-	WritebackTime string  `db:"writeback_time" json:"writeback_time"`
-	Extends       int64   `db:"extends" json:"extends"`
-	ExtendTime    string  `db:"extend_time" json:"extend_time"`
-	Fsyncs        int64   `db:"fsyncs" json:"fsyncs"`
-	FsyncTime     string  `db:"fsync_time" json:"fsync_time"`
-	Reuses        int64   `db:"reuses" json:"reuses"`
-	Evictions     int64   `db:"evictions" json:"evictions"`
+	Reads         *int64  `db:"reads" json:"reads"`
+	ReadTime      *string `db:"read_time" json:"read_time"`
+	Writes        *int64  `db:"writes" json:"writes"`
+	WriteTime     *string `db:"write_time" json:"write_time"`
+	Writebacks    *int64  `db:"writebacks" json:"writebacks"`
+	WritebackTime *string `db:"writeback_time" json:"writeback_time"`
+	Extends       *int64  `db:"extends" json:"extends"`
+	ExtendTime    *string `db:"extend_time" json:"extend_time"`
+	Fsyncs        *int64  `db:"fsyncs" json:"fsyncs"`
+	FsyncTime     *string `db:"fsync_time" json:"fsync_time"`
+	Reuses        *int64  `db:"reuses" json:"reuses"`
+	Evictions     *int64  `db:"evictions" json:"evictions"`
 	StatsReset    *string `db:"stats_reset" json:"stats_reset"`
 }
 
