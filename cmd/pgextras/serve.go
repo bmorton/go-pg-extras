@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -50,9 +49,9 @@ func serveCommand() *cli.Command {
 				EnvVars: []string{"PGEXTRAS_PUBLIC_DASHBOARD"},
 				Usage:   "Disable authentication",
 			},
-			&cli.StringFlag{
-				Name:  "enable-actions",
-				Usage: "Comma-separated admin actions to enable (kill_all,pg_stat_statements_reset,add_extensions)",
+			&cli.StringSliceFlag{
+				Name:  "enable-action",
+				Usage: "Admin action to enable; may be repeated (kill_all, pg_stat_statements_reset, add_extensions)",
 			},
 			&cli.StringFlag{
 				Name:  "tls-cert",
@@ -92,17 +91,12 @@ func serveCommand() *cli.Command {
 				prefix = ""
 			}
 
-			var enabledActions []string
-			if actions := c.String("enable-actions"); actions != "" {
-				enabledActions = strings.Split(actions, ",")
-			}
-
 			handler := pgextrashttp.NewHandler(client, pgextrashttp.HandlerOptions{
 				PathPrefix:        prefix,
 				BasicAuthUsername: c.String("auth-user"),
 				BasicAuthPassword: c.String("auth-password"),
 				PublicDashboard:   c.Bool("public"),
-				EnabledActions:    enabledActions,
+				EnabledActions:    c.StringSlice("enable-action"),
 				Logger:            logger,
 			})
 
