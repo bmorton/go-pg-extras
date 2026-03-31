@@ -1,11 +1,16 @@
 {
   "name": "go-pg-extras",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/go-pg-extras",
   "features": {
     "ghcr.io/devcontainers/features/go:1": {
       "version": "1.26.1"
-    }
-  }
+    },
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "containerEnv": {
+    "DATABASE_URL": "postgres://pgextras:pgextras@db:5432/pgextras_test?sslmode=disable"
+  },
+  "forwardPorts": [5432]
 }
