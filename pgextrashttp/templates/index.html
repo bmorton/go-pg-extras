@@ -1,0 +1,90 @@
+{{define "index"}}
+<h1 class="text-2xl font-bold mb-4">PostgreSQL Performance Dashboard</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-2 text-gray-700">Query Performance</h2>
+        <ul class="space-y-1">
+            <li><a href="{{.Prefix}}/query/outliers" class="text-blue-600 hover:underline">Outliers</a></li>
+            <li><a href="{{.Prefix}}/query/calls" class="text-blue-600 hover:underline">Calls</a></li>
+            <li><a href="{{.Prefix}}/query/long_running_queries" class="text-blue-600 hover:underline">Long Running Queries</a></li>
+        </ul>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-2 text-gray-700">Cache Efficiency</h2>
+        <ul class="space-y-1">
+            <li><a href="{{.Prefix}}/query/cache_hit" class="text-blue-600 hover:underline">Cache Hit</a></li>
+            <li><a href="{{.Prefix}}/query/index_cache_hit" class="text-blue-600 hover:underline">Index Cache Hit</a></li>
+            <li><a href="{{.Prefix}}/query/table_cache_hit" class="text-blue-600 hover:underline">Table Cache Hit</a></li>
+        </ul>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-2 text-gray-700">Index Analysis</h2>
+        <ul class="space-y-1">
+            <li><a href="{{.Prefix}}/query/index_usage" class="text-blue-600 hover:underline">Index Usage</a></li>
+            <li><a href="{{.Prefix}}/query/index_size" class="text-blue-600 hover:underline">Index Size</a></li>
+            <li><a href="{{.Prefix}}/query/unused_indexes" class="text-blue-600 hover:underline">Unused Indexes</a></li>
+            <li><a href="{{.Prefix}}/query/duplicate_indexes" class="text-blue-600 hover:underline">Duplicate Indexes</a></li>
+            <li><a href="{{.Prefix}}/query/null_indexes" class="text-blue-600 hover:underline">Null Indexes</a></li>
+            <li><a href="{{.Prefix}}/query/indexes" class="text-blue-600 hover:underline">All Indexes</a></li>
+            <li><a href="{{.Prefix}}/query/index_scans" class="text-blue-600 hover:underline">Index Scans</a></li>
+            <li><a href="{{.Prefix}}/query/total_index_size" class="text-blue-600 hover:underline">Total Index Size</a></li>
+        </ul>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-2 text-gray-700">Table Analysis</h2>
+        <ul class="space-y-1">
+            <li><a href="{{.Prefix}}/query/table_size" class="text-blue-600 hover:underline">Table Size</a></li>
+            <li><a href="{{.Prefix}}/query/total_table_size" class="text-blue-600 hover:underline">Total Table Size</a></li>
+            <li><a href="{{.Prefix}}/query/table_indexes_size" class="text-blue-600 hover:underline">Table Indexes Size</a></li>
+            <li><a href="{{.Prefix}}/query/records_rank" class="text-blue-600 hover:underline">Records Rank</a></li>
+            <li><a href="{{.Prefix}}/query/bloat" class="text-blue-600 hover:underline">Bloat</a></li>
+            <li><a href="{{.Prefix}}/query/seq_scans" class="text-blue-600 hover:underline">Sequential Scans</a></li>
+            <li><a href="{{.Prefix}}/query/tables" class="text-blue-600 hover:underline">All Tables</a></li>
+            <li><a href="{{.Prefix}}/query/table_schemas" class="text-blue-600 hover:underline">Table Schemas</a></li>
+            <li><a href="{{.Prefix}}/query/foreign_keys" class="text-blue-600 hover:underline">Foreign Keys</a></li>
+        </ul>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-2 text-gray-700">Vacuum & Maintenance</h2>
+        <ul class="space-y-1">
+            <li><a href="{{.Prefix}}/query/vacuum_stats" class="text-blue-600 hover:underline">Vacuum Stats</a></li>
+            <li><a href="{{.Prefix}}/query/vacuum_progress" class="text-blue-600 hover:underline">Vacuum Progress</a></li>
+            <li><a href="{{.Prefix}}/query/analyze_progress" class="text-blue-600 hover:underline">Analyze Progress</a></li>
+            <li><a href="{{.Prefix}}/query/vacuum_io_stats" class="text-blue-600 hover:underline">Vacuum I/O Stats</a></li>
+        </ul>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-2 text-gray-700">System & Connections</h2>
+        <ul class="space-y-1">
+            <li><a href="{{.Prefix}}/query/connections" class="text-blue-600 hover:underline">Connections</a></li>
+            <li><a href="{{.Prefix}}/query/locks" class="text-blue-600 hover:underline">Locks</a></li>
+            <li><a href="{{.Prefix}}/query/all_locks" class="text-blue-600 hover:underline">All Locks</a></li>
+            <li><a href="{{.Prefix}}/query/blocking" class="text-blue-600 hover:underline">Blocking</a></li>
+            <li><a href="{{.Prefix}}/query/db_settings" class="text-blue-600 hover:underline">DB Settings</a></li>
+            <li><a href="{{.Prefix}}/query/ssl_used" class="text-blue-600 hover:underline">SSL Used</a></li>
+            <li><a href="{{.Prefix}}/query/extensions" class="text-blue-600 hover:underline">Extensions</a></li>
+            <li><a href="{{.Prefix}}/query/buffercache_stats" class="text-blue-600 hover:underline">Buffercache Stats</a></li>
+            <li><a href="{{.Prefix}}/query/buffercache_usage" class="text-blue-600 hover:underline">Buffercache Usage</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="mb-8">
+    <a href="{{.Prefix}}/diagnose" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Run Health Check</a>
+    <a href="{{.Prefix}}/query/mandelbrot" class="ml-2 bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Mandelbrot</a>
+</div>
+
+{{if .Actions}}
+<div class="bg-white rounded-lg shadow p-4 mb-8">
+    <h2 class="text-lg font-semibold mb-2 text-red-700">Administrative Actions</h2>
+    <div class="space-x-2">
+        {{range .Actions}}
+        <form method="POST" action="{{$.Prefix}}/action/{{.}}" class="inline" onsubmit="return confirm('Are you sure?');">
+            <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">{{.}}</button>
+        </form>
+        {{end}}
+    </div>
+</div>
+{{end}}
+{{end}}
