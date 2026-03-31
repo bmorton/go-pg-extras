@@ -1,4 +1,4 @@
-.PHONY: build run test test-integration lint vet fmt clean help serve list check tailwind
+.PHONY: build run test test-integration lint vet fmt clean help serve list check tailwind generate-traffic
 
 # Connection
 DATABASE_URL ?= postgres://pgextras:pgextras@db:5432/pgextras_test?sslmode=disable
@@ -67,3 +67,9 @@ diagnose: build
 ## add-extensions: Install pg_stat_statements, pg_buffercache, sslinfo
 add-extensions: build
 	DATABASE_URL=$(DATABASE_URL) $(BUILD_DIR)/$(BINARY) query add_extensions
+
+## generate-traffic: Run queries against the sample database to populate pg stats
+generate-traffic:
+	@echo "Generating database traffic to populate statistics..."
+	@PAGER=cat psql "$(DATABASE_URL)" -q -f scripts/generate-traffic.sql
+	@echo "Done. Stats should now be populated for the dashboard."
