@@ -1,0 +1,11 @@
+{
+  "name": "go-pg-extras",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.26.1"
+    }
+  }
+}
