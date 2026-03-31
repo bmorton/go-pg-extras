@@ -1,0 +1,93 @@
+{{define "table_overview"}}
+<h1 class="text-2xl font-bold mb-4">Table Sizes</h1>
+
+{{if .Error}}
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    {{.Error}}
+</div>
+{{else if .Results}}
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200" id="overview-table">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="string" data-col="0">
+                    Name <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="bytes" data-col="1">
+                    Table Size <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="bytes" data-col="2">
+                    Total Size <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="bytes" data-col="3">
+                    Index Size <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="number" data-col="4">
+                    Estimated Rows <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200" id="overview-body">
+            {{range .Results}}
+            <tr class="hover:bg-gray-50" data-table-size="{{.TableSizeBytes}}" data-total-size="{{.TotalSizeBytes}}" data-index-size="{{.IndexSizeBytes}}" data-rows="{{.EstimatedRows}}">
+                <td class="px-4 py-2 text-sm font-medium text-gray-900">{{.Name}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">{{.TableSize}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">{{.TotalSize}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">{{.IndexSize}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.EstimatedRows}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+<script>
+(function() {
+    var table = document.getElementById('overview-table');
+    var tbody = document.getElementById('overview-body');
+    var headers = table.querySelectorAll('th[data-sort]');
+    var currentCol = -1;
+    var ascending = true;
+    var dataAttrs = ['', 'table-size', 'total-size', 'index-size', 'rows'];
+
+    headers.forEach(function(th) {
+        th.addEventListener('click', function() {
+            var col = parseInt(th.getAttribute('data-col'));
+            var sortType = th.getAttribute('data-sort');
+
+            if (currentCol === col) {
+                ascending = !ascending;
+            } else {
+                ascending = sortType === 'string';
+                currentCol = col;
+            }
+
+            // Update arrow indicators
+            headers.forEach(function(h) {
+                h.querySelector('.sort-arrow').innerHTML = '&#x25B4;&#x25BE;';
+            });
+            th.querySelector('.sort-arrow').innerHTML = ascending ? '&#x25B4;' : '&#x25BE;';
+
+            var rows = Array.from(tbody.querySelectorAll('tr'));
+            rows.sort(function(a, b) {
+                var av, bv;
+                if (sortType === 'string') {
+                    av = a.cells[col].textContent.trim().toLowerCase();
+                    bv = b.cells[col].textContent.trim().toLowerCase();
+                    return ascending ? av.localeCompare(bv) : bv.localeCompare(av);
+                } else {
+                    av = parseInt(a.getAttribute('data-' + dataAttrs[col]) || '0');
+                    bv = parseInt(b.getAttribute('data-' + dataAttrs[col]) || '0');
+                    return ascending ? av - bv : bv - av;
+                }
+            });
+            rows.forEach(function(row) { tbody.appendChild(row); });
+        });
+    });
+})();
+</script>
+{{else}}
+<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+    No tables found.
+</div>
+{{end}}
+{{end}}

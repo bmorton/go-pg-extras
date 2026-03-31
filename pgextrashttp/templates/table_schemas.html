@@ -1,0 +1,82 @@
+{{define "table_schemas"}}
+<h1 class="text-2xl font-bold mb-4">Table Schemas</h1>
+
+{{if .Error}}
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    {{.Error}}
+</div>
+{{else if .Tables}}
+
+<div class="bg-white rounded-lg shadow p-4 mb-6">
+    <h2 class="text-lg font-semibold mb-2 text-gray-700">Tables</h2>
+    <div class="flex flex-wrap gap-2">
+        {{range .Tables}}
+        <a href="#table-{{.TableName}}" class="text-blue-600 hover:underline text-sm">{{.TableName}}</a>
+        {{end}}
+    </div>
+</div>
+
+{{range .Tables}}
+<div class="mb-8" id="table-{{.TableName}}">
+    <div class="flex items-baseline gap-2 mb-2">
+        <h2 class="text-xl font-bold text-gray-800">{{.TableName}}</h2>
+        <a href="#table-{{.TableName}}" class="text-gray-400 hover:text-gray-600 text-sm">#</a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-x-auto mb-4">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Column</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nullable</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Default</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {{range .Columns}}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-2 text-sm font-mono text-gray-900">{{.ColumnName}}</td>
+                    <td class="px-4 py-2 text-sm text-gray-900">{{.DataType}}</td>
+                    <td class="px-4 py-2 text-sm text-gray-900">{{.IsNullable}}</td>
+                    <td class="px-4 py-2 text-sm text-gray-500">{{if .ColumnDefault}}{{deref .ColumnDefault}}{{else}}<span class="text-gray-300">—</span>{{end}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+
+    {{if .ForeignKeys}}
+    <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-1">Foreign Keys</h3>
+    <div class="bg-white rounded-lg shadow overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Constraint</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Column</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">References Table</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">References Column</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {{range .ForeignKeys}}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-2 text-sm font-mono text-gray-900">{{.ConstraintName}}</td>
+                    <td class="px-4 py-2 text-sm text-gray-900">{{.ColumnName}}</td>
+                    <td class="px-4 py-2 text-sm text-gray-900"><a href="#table-{{.ForeignTableName}}" class="text-blue-600 hover:underline">{{.ForeignTableName}}</a></td>
+                    <td class="px-4 py-2 text-sm text-gray-900">{{.ForeignColumnName}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+    {{end}}
+</div>
+{{end}}
+
+{{else}}
+<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+    No tables found.
+</div>
+{{end}}
+{{end}}

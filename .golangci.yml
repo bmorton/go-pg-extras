@@ -35,7 +35,7 @@ formatters:
       sections:
         - standard # Standard section: captures all standard packages.
         - default # Default section: contains all imports that could not be matched to another section type.
-        - prefix(github.com/bmorton/go-base) # Custom section: groups all imports with the specified Prefix.
+        - prefix(github.com/bmorton/go-pg-extras) # Custom section: groups all imports with the specified Prefix.
 
 issues:
   max-issues-per-linter: 0
