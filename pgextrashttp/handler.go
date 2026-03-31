@@ -138,6 +138,10 @@ func handleQuery(w http.ResponseWriter, r *http.Request, tmpl *template.Template
 		handleTableOverview(w, r, tmpl, client, opts)
 		return
 	}
+	if queryName == "scan_activity" {
+		handleScanActivity(w, r, tmpl, client, opts)
+		return
+	}
 
 	ctx := r.Context()
 	headers, rows, err := executeQuery(ctx, client, queryName)
@@ -173,7 +177,7 @@ func handleTableSchemas(w http.ResponseWriter, r *http.Request, tmpl *template.T
 func handleTableOverview(w http.ResponseWriter, r *http.Request, tmpl *template.Template, client *pgextras.Client, opts HandlerOptions) {
 	results, err := client.TableOverview(r.Context())
 	data := map[string]any{
-		"Title":     "Table Overview",
+		"Title":     "Table Sizes",
 		"Prefix":    opts.PathPrefix,
 		"Results":   results,
 		"ActiveNav": "table_overview",
@@ -182,6 +186,20 @@ func handleTableOverview(w http.ResponseWriter, r *http.Request, tmpl *template.
 		data["Error"] = err.Error()
 	}
 	renderLayout(w, tmpl, "table_overview", data)
+}
+
+func handleScanActivity(w http.ResponseWriter, r *http.Request, tmpl *template.Template, client *pgextras.Client, opts HandlerOptions) {
+	results, err := client.ScanActivity(r.Context())
+	data := map[string]any{
+		"Title":     "Scan Activity",
+		"Prefix":    opts.PathPrefix,
+		"Results":   results,
+		"ActiveNav": "scan_activity",
+	}
+	if err != nil {
+		data["Error"] = err.Error()
+	}
+	renderLayout(w, tmpl, "scan_activity", data)
 }
 
 func handleDiagnose(w http.ResponseWriter, r *http.Request, tmpl *template.Template, client *pgextras.Client, opts HandlerOptions) {
@@ -356,6 +374,8 @@ func executeQueryRaw(ctx context.Context, client *pgextras.Client, name string) 
 		return client.RecordsRank(ctx)
 	case "table_overview":
 		return client.TableOverview(ctx)
+	case "scan_activity":
+		return client.ScanActivity(ctx)
 	case "bloat":
 		return client.Bloat(ctx)
 	case "seq_scans":

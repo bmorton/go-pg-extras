@@ -115,6 +115,16 @@ CREATE INDEX idx_sessions_user_id    ON sessions (user_id);
 CREATE INDEX idx_sessions_expires_at ON sessions (expires_at);
 
 -- =============================================================================
+-- Foreign key constraints (exercises foreign_keys query)
+-- =============================================================================
+ALTER TABLE orders ADD CONSTRAINT fk_orders_customer
+    FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE orders ADD CONSTRAINT fk_orders_product
+    FOREIGN KEY (product_id) REFERENCES products (id);
+ALTER TABLE sessions ADD CONSTRAINT fk_sessions_user
+    FOREIGN KEY (user_id) REFERENCES customers (id);
+
+-- =============================================================================
 -- Seed data
 -- =============================================================================
 

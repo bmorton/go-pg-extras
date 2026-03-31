@@ -215,6 +215,15 @@ func (c *Client) TableOverview(ctx context.Context) ([]TableOverviewResult, erro
 	return runQuery[TableOverviewResult](ctx, c.db, query)
 }
 
+// ScanActivity returns combined index and sequential scan counts per table.
+func (c *Client) ScanActivity(ctx context.Context) ([]ScanActivityResult, error) {
+	query, err := c.loadSQL("scan_activity", nil)
+	if err != nil {
+		return nil, err
+	}
+	return runQuery[ScanActivityResult](ctx, c.db, query)
+}
+
 // Bloat returns table and index bloat estimation.
 func (c *Client) Bloat(ctx context.Context) ([]BloatResult, error) {
 	query, err := c.loadSQL("bloat", nil)

@@ -169,6 +169,15 @@ type SeqScansResult struct {
 	Count int64  `db:"count" json:"count"`
 }
 
+// ScanActivityResult holds combined index and sequential scan data per table.
+type ScanActivityResult struct {
+	Name            string  `db:"name" json:"name"`
+	IndexScans      int64   `db:"index_scans" json:"index_scans"`
+	SequentialScans int64   `db:"sequential_scans" json:"sequential_scans"`
+	TotalScans      int64   `db:"total_scans" json:"total_scans"`
+	IndexScanPct    float64 `db:"index_scan_pct" json:"index_scan_pct"`
+}
+
 // TableSchemaResult holds column definitions for a table.
 type TableSchemaResult struct {
 	ColumnName    string  `db:"column_name" json:"column_name"`
