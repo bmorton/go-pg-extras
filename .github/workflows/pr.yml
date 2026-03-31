@@ -34,3 +34,39 @@ jobs:
         uses: ./.github/actions/setup-go
       - name: Run tests
         uses: ./.github/actions/run-tests
+
+  test-integration:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16-bookworm
+        env:
+          POSTGRES_USER: pgextras
+          POSTGRES_PASSWORD: pgextras
+          POSTGRES_DB: pgextras_test
+          POSTGRES_INITDB_ARGS: ""
+        options: >-
+          --health-cmd "pg_isready -U pgextras -d pgextras_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgres://pgextras:pgextras@localhost:5432/pgextras_test?sslmode=disable
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Go
+        uses: ./.github/actions/setup-go
+      - name: Seed test database
+        run: PGPASSWORD=pgextras psql -h localhost -U pgextras -d pgextras_test -f .devcontainer/initdb/01-sample-data.sql
+      - name: Run integration tests with coverage
+        run: go test -v -race -count=1 -tags=integration -coverprofile=coverage-integration.out -covermode=atomic ./...
+      - name: Display coverage summary
+        run: |
+          go tool cover -func=coverage-integration.out
+          total_coverage=$(go tool cover -func=coverage-integration.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Total coverage (unit + integration): ${total_coverage}%"
