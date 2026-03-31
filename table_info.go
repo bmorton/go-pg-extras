@@ -1,6 +1,58 @@
 package pgextras
 
-import "context"
+import (
+	"context"
+	"sort"
+)
+
+// TableSchemaDetail holds grouped schema and foreign key info for a single table.
+type TableSchemaDetail struct {
+	TableName   string               `json:"table_name"`
+	Columns     []TableSchemasResult `json:"columns"`
+	ForeignKeys []ForeignKeysResult  `json:"foreign_keys,omitempty"`
+}
+
+// TableSchemasGrouped returns table schema information grouped by table,
+// including column definitions and foreign key relationships for each table.
+func (c *Client) TableSchemasGrouped(ctx context.Context) ([]TableSchemaDetail, error) {
+	schemas, err := c.TableSchemas(ctx)
+	if err != nil {
+		return nil, err
+	}
+	fks, err := c.ForeignKeys(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Group columns by table name, preserving order of first appearance.
+	tableOrder := make([]string, 0)
+	colsByTable := make(map[string][]TableSchemasResult)
+	for _, col := range schemas {
+		if _, exists := colsByTable[col.TableName]; !exists {
+			tableOrder = append(tableOrder, col.TableName)
+		}
+		colsByTable[col.TableName] = append(colsByTable[col.TableName], col)
+	}
+
+	// Group foreign keys by table name.
+	fksByTable := make(map[string][]ForeignKeysResult)
+	for _, fk := range fks {
+		fksByTable[fk.TableName] = append(fksByTable[fk.TableName], fk)
+	}
+
+	// Sort table names alphabetically for predictable output.
+	sort.Strings(tableOrder)
+
+	results := make([]TableSchemaDetail, 0, len(tableOrder))
+	for _, name := range tableOrder {
+		results = append(results, TableSchemaDetail{
+			TableName:   name,
+			Columns:     colsByTable[name],
+			ForeignKeys: fksByTable[name],
+		})
+	}
+	return results, nil
+}
 
 // TableInfoResult holds aggregated table information.
 type TableInfoResult struct {

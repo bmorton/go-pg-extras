@@ -39,7 +39,15 @@ func NewHandler(client *pgextras.Client, opts HandlerOptions) http.Handler {
 		opts.Logger = slog.New(slog.NewTextHandler(os.Stderr, nil))
 	}
 
-	tmpl := template.Must(template.ParseFS(templateFiles, "templates/*.html"))
+	funcMap := template.FuncMap{
+		"deref": func(s *string) string {
+			if s == nil {
+				return ""
+			}
+			return *s
+		},
+	}
+	tmpl := template.Must(template.New("").Funcs(funcMap).ParseFS(templateFiles, "templates/*.html"))
 
 	mux := http.NewServeMux()
 
@@ -103,6 +111,11 @@ func renderIndex(w http.ResponseWriter, tmpl *template.Template, opts HandlerOpt
 }
 
 func handleQuery(w http.ResponseWriter, r *http.Request, tmpl *template.Template, client *pgextras.Client, opts HandlerOptions, queryName string) {
+	if queryName == "table_schemas" {
+		handleTableSchemas(w, r, tmpl, client, opts)
+		return
+	}
+
 	ctx := r.Context()
 	headers, rows, err := executeQuery(ctx, client, queryName)
 
@@ -117,6 +130,19 @@ func handleQuery(w http.ResponseWriter, r *http.Request, tmpl *template.Template
 		data["Error"] = err.Error()
 	}
 	renderLayout(w, tmpl, "query", data)
+}
+
+func handleTableSchemas(w http.ResponseWriter, r *http.Request, tmpl *template.Template, client *pgextras.Client, opts HandlerOptions) {
+	tables, err := client.TableSchemasGrouped(r.Context())
+	data := map[string]any{
+		"Title":  "Table Schemas",
+		"Prefix": opts.PathPrefix,
+		"Tables": tables,
+	}
+	if err != nil {
+		data["Error"] = err.Error()
+	}
+	renderLayout(w, tmpl, "table_schemas", data)
 }
 
 func handleDiagnose(w http.ResponseWriter, r *http.Request, tmpl *template.Template, client *pgextras.Client, opts HandlerOptions) {
