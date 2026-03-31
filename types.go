@@ -142,6 +142,18 @@ type RecordsRankResult struct {
 	EstimatedCount int64  `db:"estimated_count" json:"estimated_count"`
 }
 
+// TableOverviewResult holds combined size and row count data for a table.
+type TableOverviewResult struct {
+	Name           string `db:"name" json:"name"`
+	TableSize      string `db:"table_size" json:"table_size"`
+	TableSizeBytes int64  `db:"table_size_bytes" json:"table_size_bytes"`
+	TotalSize      string `db:"total_size" json:"total_size"`
+	TotalSizeBytes int64  `db:"total_size_bytes" json:"total_size_bytes"`
+	IndexSize      string `db:"index_size" json:"index_size"`
+	IndexSizeBytes int64  `db:"index_size_bytes" json:"index_size_bytes"`
+	EstimatedRows  int64  `db:"estimated_rows" json:"estimated_rows"`
+}
+
 // BloatResult holds bloat estimation per table/index.
 type BloatResult struct {
 	Type       string `db:"type" json:"type"`

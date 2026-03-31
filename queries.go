@@ -206,6 +206,15 @@ func (c *Client) RecordsRank(ctx context.Context) ([]RecordsRankResult, error) {
 	return runQuery[RecordsRankResult](ctx, c.db, query)
 }
 
+// TableOverview returns combined size and row count data for all tables.
+func (c *Client) TableOverview(ctx context.Context) ([]TableOverviewResult, error) {
+	query, err := c.loadSQL("table_overview", nil)
+	if err != nil {
+		return nil, err
+	}
+	return runQuery[TableOverviewResult](ctx, c.db, query)
+}
+
 // Bloat returns table and index bloat estimation.
 func (c *Client) Bloat(ctx context.Context) ([]BloatResult, error) {
 	query, err := c.loadSQL("bloat", nil)
