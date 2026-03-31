@@ -18,6 +18,9 @@ import (
 //go:embed templates/*.html
 var templateFiles embed.FS
 
+//go:embed static/*
+var staticFiles embed.FS
+
 // NewHandler returns an http.Handler that serves the pg-extras dashboard.
 func NewHandler(client *pgextras.Client, opts HandlerOptions) http.Handler {
 	if opts.PathPrefix == "" {
@@ -63,6 +66,21 @@ func NewHandler(client *pgextras.Client, opts HandlerOptions) http.Handler {
 		renderIndex(w, tmpl, opts)
 	})
 
+	mux.HandleFunc(prefix+"/static/", func(w http.ResponseWriter, r *http.Request) {
+		// Strip the prefix to get the file path within the embed.
+		filePath := strings.TrimPrefix(r.URL.Path, prefix+"/")
+		data, err := staticFiles.ReadFile(filePath)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		if strings.HasSuffix(filePath, ".css") {
+			w.Header().Set("Content-Type", "text/css; charset=utf-8")
+		}
+		w.Header().Set("Cache-Control", "public, max-age=86400")
+		w.Write(data)
+	})
+
 	mux.HandleFunc(prefix+"/query/", func(w http.ResponseWriter, r *http.Request) {
 		queryName := strings.TrimPrefix(r.URL.Path, prefix+"/query/")
 		handleQuery(w, r, tmpl, client, opts, queryName)
@@ -103,9 +121,10 @@ func NewHandler(client *pgextras.Client, opts HandlerOptions) http.Handler {
 
 func renderIndex(w http.ResponseWriter, tmpl *template.Template, opts HandlerOptions) {
 	data := map[string]any{
-		"Title":   "Dashboard",
-		"Prefix":  opts.PathPrefix,
-		"Actions": opts.EnabledActions,
+		"Title":     "Dashboard",
+		"Prefix":    opts.PathPrefix,
+		"Actions":   opts.EnabledActions,
+		"ActiveNav": "index",
 	}
 	renderLayout(w, tmpl, "index", data)
 }
@@ -125,6 +144,7 @@ func handleQuery(w http.ResponseWriter, r *http.Request, tmpl *template.Template
 		"QueryName": queryName,
 		"Headers":   headers,
 		"Rows":      rows,
+		"ActiveNav": queryName,
 	}
 	if err != nil {
 		data["Error"] = err.Error()
@@ -135,9 +155,10 @@ func handleQuery(w http.ResponseWriter, r *http.Request, tmpl *template.Template
 func handleTableSchemas(w http.ResponseWriter, r *http.Request, tmpl *template.Template, client *pgextras.Client, opts HandlerOptions) {
 	tables, err := client.TableSchemasGrouped(r.Context())
 	data := map[string]any{
-		"Title":  "Table Schemas",
-		"Prefix": opts.PathPrefix,
-		"Tables": tables,
+		"Title":     "Table Schemas",
+		"Prefix":    opts.PathPrefix,
+		"Tables":    tables,
+		"ActiveNav": "table_schemas",
 	}
 	if err != nil {
 		data["Error"] = err.Error()
@@ -148,9 +169,10 @@ func handleTableSchemas(w http.ResponseWriter, r *http.Request, tmpl *template.T
 func handleDiagnose(w http.ResponseWriter, r *http.Request, tmpl *template.Template, client *pgextras.Client, opts HandlerOptions) {
 	results, err := client.Diagnose(r.Context())
 	data := map[string]any{
-		"Title":   "Health Check",
-		"Prefix":  opts.PathPrefix,
-		"Results": results,
+		"Title":     "Health Check",
+		"Prefix":    opts.PathPrefix,
+		"Results":   results,
+		"ActiveNav": "diagnose",
 	}
 	if err != nil {
 		data["Error"] = err.Error()

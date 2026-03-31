@@ -1,4 +1,4 @@
-.PHONY: build run test test-integration lint vet fmt clean help serve list check
+.PHONY: build run test test-integration lint vet fmt clean help serve list check tailwind
 
 # Connection
 DATABASE_URL ?= postgres://pgextras:pgextras@db:5432/pgextras_test?sslmode=disable
@@ -55,6 +55,10 @@ check: fmt vet lint test
 ## clean: Remove build artifacts
 clean:
 	rm -rf $(BUILD_DIR)
+
+## tailwind: Rebuild the embedded Tailwind CSS from templates
+tailwind:
+	cd pgextrashttp && tailwindcss -i tailwind.css -o static/tailwind.min.css -m
 
 ## diagnose: Run health checks against the database
 diagnose: build

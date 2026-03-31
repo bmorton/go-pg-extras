@@ -4,16 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Title}} - pg-extras</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="{{.Prefix}}/static/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <nav class="bg-white shadow-sm mb-6">
-        <div class="max-w-7xl mx-auto px-4 py-3">
-            <a href="{{.Prefix}}/" class="text-xl font-bold text-gray-800">pg-extras</a>
+<body class="bg-gray-100 min-h-screen flex">
+    <nav class="fixed top-0 left-0 h-screen w-64 bg-gray-900 text-gray-300 overflow-y-auto flex-shrink-0 flex flex-col">
+        <div class="px-4 py-4 border-b border-gray-700">
+            <a href="{{.Prefix}}/" class="text-lg font-bold text-white hover:text-gray-200">pg-extras</a>
+        </div>
+        <div class="flex-1 overflow-y-auto px-3 py-3 text-sm space-y-4">
+            <div>
+                <a href="{{.Prefix}}/diagnose" class="block px-2 py-1.5 rounded {{if eq .ActiveNav "diagnose"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Health Check</a>
+            </div>
+            <div>
+                <h3 class="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Query Performance</h3>
+                <a href="{{.Prefix}}/query/outliers" class="block px-2 py-1 rounded {{if eq .ActiveNav "outliers"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Outliers</a>
+                <a href="{{.Prefix}}/query/calls" class="block px-2 py-1 rounded {{if eq .ActiveNav "calls"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Calls</a>
+                <a href="{{.Prefix}}/query/long_running_queries" class="block px-2 py-1 rounded {{if eq .ActiveNav "long_running_queries"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Long Running Queries</a>
+            </div>
+            <div>
+                <h3 class="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Cache Efficiency</h3>
+                <a href="{{.Prefix}}/query/cache_hit" class="block px-2 py-1 rounded {{if eq .ActiveNav "cache_hit"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Cache Hit</a>
+                <a href="{{.Prefix}}/query/index_cache_hit" class="block px-2 py-1 rounded {{if eq .ActiveNav "index_cache_hit"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Index Cache Hit</a>
+                <a href="{{.Prefix}}/query/table_cache_hit" class="block px-2 py-1 rounded {{if eq .ActiveNav "table_cache_hit"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Table Cache Hit</a>
+            </div>
+            <div>
+                <h3 class="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Index Analysis</h3>
+                <a href="{{.Prefix}}/query/index_usage" class="block px-2 py-1 rounded {{if eq .ActiveNav "index_usage"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Index Usage</a>
+                <a href="{{.Prefix}}/query/index_size" class="block px-2 py-1 rounded {{if eq .ActiveNav "index_size"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Index Size</a>
+                <a href="{{.Prefix}}/query/unused_indexes" class="block px-2 py-1 rounded {{if eq .ActiveNav "unused_indexes"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Unused Indexes</a>
+                <a href="{{.Prefix}}/query/duplicate_indexes" class="block px-2 py-1 rounded {{if eq .ActiveNav "duplicate_indexes"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Duplicate Indexes</a>
+                <a href="{{.Prefix}}/query/null_indexes" class="block px-2 py-1 rounded {{if eq .ActiveNav "null_indexes"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Null Indexes</a>
+                <a href="{{.Prefix}}/query/indexes" class="block px-2 py-1 rounded {{if eq .ActiveNav "indexes"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">All Indexes</a>
+                <a href="{{.Prefix}}/query/index_scans" class="block px-2 py-1 rounded {{if eq .ActiveNav "index_scans"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Index Scans</a>
+                <a href="{{.Prefix}}/query/total_index_size" class="block px-2 py-1 rounded {{if eq .ActiveNav "total_index_size"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Total Index Size</a>
+            </div>
+            <div>
+                <h3 class="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Table Analysis</h3>
+                <a href="{{.Prefix}}/query/table_size" class="block px-2 py-1 rounded {{if eq .ActiveNav "table_size"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Table Size</a>
+                <a href="{{.Prefix}}/query/total_table_size" class="block px-2 py-1 rounded {{if eq .ActiveNav "total_table_size"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Total Table Size</a>
+                <a href="{{.Prefix}}/query/table_indexes_size" class="block px-2 py-1 rounded {{if eq .ActiveNav "table_indexes_size"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Table Indexes Size</a>
+                <a href="{{.Prefix}}/query/records_rank" class="block px-2 py-1 rounded {{if eq .ActiveNav "records_rank"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Records Rank</a>
+                <a href="{{.Prefix}}/query/bloat" class="block px-2 py-1 rounded {{if eq .ActiveNav "bloat"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Bloat</a>
+                <a href="{{.Prefix}}/query/seq_scans" class="block px-2 py-1 rounded {{if eq .ActiveNav "seq_scans"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Sequential Scans</a>
+                <a href="{{.Prefix}}/query/tables" class="block px-2 py-1 rounded {{if eq .ActiveNav "tables"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">All Tables</a>
+                <a href="{{.Prefix}}/query/table_schemas" class="block px-2 py-1 rounded {{if eq .ActiveNav "table_schemas"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Table Schemas</a>
+                <a href="{{.Prefix}}/query/foreign_keys" class="block px-2 py-1 rounded {{if eq .ActiveNav "foreign_keys"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Foreign Keys</a>
+                <a href="{{.Prefix}}/query/table_index_scans" class="block px-2 py-1 rounded {{if eq .ActiveNav "table_index_scans"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Table Index Scans</a>
+                <a href="{{.Prefix}}/query/table_foreign_keys" class="block px-2 py-1 rounded {{if eq .ActiveNav "table_foreign_keys"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Table Foreign Keys</a>
+            </div>
+            <div>
+                <h3 class="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Vacuum & Maintenance</h3>
+                <a href="{{.Prefix}}/query/vacuum_stats" class="block px-2 py-1 rounded {{if eq .ActiveNav "vacuum_stats"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Vacuum Stats</a>
+                <a href="{{.Prefix}}/query/vacuum_progress" class="block px-2 py-1 rounded {{if eq .ActiveNav "vacuum_progress"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Vacuum Progress</a>
+                <a href="{{.Prefix}}/query/analyze_progress" class="block px-2 py-1 rounded {{if eq .ActiveNav "analyze_progress"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Analyze Progress</a>
+                <a href="{{.Prefix}}/query/vacuum_io_stats" class="block px-2 py-1 rounded {{if eq .ActiveNav "vacuum_io_stats"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Vacuum I/O Stats</a>
+            </div>
+            <div>
+                <h3 class="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">System & Connections</h3>
+                <a href="{{.Prefix}}/query/connections" class="block px-2 py-1 rounded {{if eq .ActiveNav "connections"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Connections</a>
+                <a href="{{.Prefix}}/query/locks" class="block px-2 py-1 rounded {{if eq .ActiveNav "locks"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Locks</a>
+                <a href="{{.Prefix}}/query/all_locks" class="block px-2 py-1 rounded {{if eq .ActiveNav "all_locks"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">All Locks</a>
+                <a href="{{.Prefix}}/query/blocking" class="block px-2 py-1 rounded {{if eq .ActiveNav "blocking"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Blocking</a>
+                <a href="{{.Prefix}}/query/db_settings" class="block px-2 py-1 rounded {{if eq .ActiveNav "db_settings"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">DB Settings</a>
+                <a href="{{.Prefix}}/query/ssl_used" class="block px-2 py-1 rounded {{if eq .ActiveNav "ssl_used"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">SSL Used</a>
+                <a href="{{.Prefix}}/query/extensions" class="block px-2 py-1 rounded {{if eq .ActiveNav "extensions"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Extensions</a>
+                <a href="{{.Prefix}}/query/buffercache_stats" class="block px-2 py-1 rounded {{if eq .ActiveNav "buffercache_stats"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Buffercache Stats</a>
+                <a href="{{.Prefix}}/query/buffercache_usage" class="block px-2 py-1 rounded {{if eq .ActiveNav "buffercache_usage"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Buffercache Usage</a>
+            </div>
+            <div class="pt-2 border-t border-gray-700">
+                <a href="{{.Prefix}}/query/mandelbrot" class="block px-2 py-1 rounded {{if eq .ActiveNav "mandelbrot"}}bg-gray-700 text-white{{else}}hover:bg-gray-800 hover:text-white{{end}}">Mandelbrot</a>
+            </div>
         </div>
     </nav>
-    <div class="max-w-7xl mx-auto px-4">
+    <main class="ml-64 flex-1 min-h-screen p-6">
         {{.Content}}
-    </div>
+    </main>
 </body>
 </html>
