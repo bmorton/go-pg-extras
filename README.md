@@ -1,29 +1,277 @@
 # go-pg-extras
 
-PostgreSQL database performance insights for Go. Locks, index usage, buffer cache hit ratios, vacuum stats, and more.
+[![Go Reference](https://pkg.go.dev/badge/github.com/bmorton/go-pg-extras.svg)](https://pkg.go.dev/github.com/bmorton/go-pg-extras)
+[![CI](https://github.com/bmorton/go-pg-extras/actions/workflows/main.yml/badge.svg)](https://github.com/bmorton/go-pg-extras/actions/workflows/main.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A Go port of [rails-pg-extras](https://github.com/pawurb/rails-pg-extras), providing the same powerful PostgreSQL diagnostic queries as a Go library and standalone CLI binary. This project is **not** officially affiliated with or endorsed by any of the upstream projects it draws from.
+PostgreSQL performance diagnostics for Go — as a library, CLI, or web dashboard.
 
-## Overview
+A Go port of [rails-pg-extras](https://github.com/pawurb/rails-pg-extras), providing 50+ useful PostgreSQL diagnostic queries to help you identify performance issues, missing indexes, cache inefficiencies, lock contention, and more.
 
-`go-pg-extras` gives you easy access to a collection of useful PostgreSQL metadata queries that help diagnose performance issues, identify missing or unused indexes, check cache efficiency, inspect locks, and more. It can be used in two ways:
+<p align="center">
+  <img src="docs/screenshots/web-health-check.png" alt="Web dashboard — Health Check" width="800">
+</p>
 
-- **As a Go library** — import into your Go applications for programmatic access to PostgreSQL diagnostics.
-- **As a standalone CLI binary** — run queries directly from the command line against any PostgreSQL database.
+## Features
 
-## Query Sources
+- **50+ diagnostic queries** — cache hit ratios, index usage, bloat, vacuum stats, locks, table sizes, and more
+- **Automated health checks** — the `diagnose` command evaluates 10 key metrics with OK/FAIL status
+- **Three usage modes** — Go library, standalone CLI binary, or HTTP web dashboard
+- **Version-aware SQL** — automatically selects the right query variant for PostgreSQL 13, 17, and legacy versions
+- **Multiple output formats** — JSON, CSV, and ASCII table
+- **Secure web dashboard** — basic auth, TLS, and configurable path prefix
+- **No ORM dependency** — uses stdlib `database/sql`; bring your own `*sql.DB`
 
-The SQL queries used in this project originate from several sources:
+## Installation
 
-- [heroku-pg-extras](https://github.com/heroku/heroku-pg-extras)
-- [rails-pg-extras](https://github.com/pawurb/rails-pg-extras) (and its core dependency [ruby-pg-extras](https://github.com/pawurb/ruby-pg-extras))
-- [PostgreSQL Unused Index Size](https://hakibenita.com/postgresql-unused-index-size) by Haki Benita
-- [Useful SQLs to Check Contents of PostgreSQL shared_buffers](https://sites.google.com/site/itmyshare/database-tips-and-examples/postgres/useful-sqls-to-check-contents-of-postgresql-shared_buffer)
-- [Index Maintenance](https://wiki.postgresql.org/wiki/Index_Maintenance) — PostgreSQL Wiki
+### Go library
 
-## Disclaimer
+```sh
+go get github.com/bmorton/go-pg-extras
+```
 
-This project is an independent Go port. It is not affiliated with, endorsed by, or officially connected to Heroku, the rails-pg-extras project, or any of the other sources listed above. All credit for the original queries and concepts belongs to their respective authors.
+### CLI binary
+
+```sh
+go install github.com/bmorton/go-pg-extras/cmd/pgextras@latest
+```
+
+### Docker
+
+```sh
+docker run --rm ghcr.io/bmorton/go-pg-extras \
+  --database-url "postgres://user:pass@host:5432/dbname" cache_hit
+```
+
+## Quick Start — Library
+
+```go
+package main
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"log"
+
+	_ "github.com/lib/pq"
+
+	"github.com/bmorton/go-pg-extras"
+)
+
+func main() {
+	db, err := sql.Open("postgres", "postgres://user:pass@localhost:5432/mydb?sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	client, err := pgextras.New(pgextras.Config{DB: db})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	results, err := client.CacheHit(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, r := range results {
+		fmt.Printf("%s: %s\n", r.Name, r.Ratio)
+	}
+}
+```
+
+## Quick Start — CLI
+
+```sh
+# Check buffer cache hit ratios
+pgextras -d "postgres://user:pass@localhost:5432/mydb" cache_hit
+
+# Show top 10 slowest queries
+pgextras -d "postgres://user:pass@localhost:5432/mydb" outliers --limit 10
+
+# Run automated health checks
+pgextras -d "postgres://user:pass@localhost:5432/mydb" diagnose
+
+# List all available queries
+pgextras -d "postgres://user:pass@localhost:5432/mydb" list
+```
+
+You can also set `DATABASE_URL` as an environment variable instead of passing `-d` each time.
+
+Output format can be changed with `--format` (`table`, `json`, or `csv`).
+
+## Quick Start — Web Dashboard
+
+Start the built-in web dashboard as a standalone HTTP server:
+
+```sh
+pgextras serve -d "postgres://user:pass@localhost:5432/mydb" --public --addr :8080
+```
+
+Then visit `http://localhost:8080/pg_extras` to browse all queries from the sidebar, run health checks, and inspect your database.
+
+<p align="center">
+  <img src="docs/screenshots/web-table-overview.png" alt="Web dashboard — Table Sizes" width="800">
+</p>
+
+<details>
+<summary>More screenshots</summary>
+
+| | |
+|---|---|
+| [![Unused Indexes](docs/screenshots/web-unused-indexes.png)](docs/screenshots/web-unused-indexes.png) | [![Extensions](docs/screenshots/web-extensions.png)](docs/screenshots/web-extensions.png) |
+| Unused Indexes | Extensions |
+
+</details>
+
+## Embedding in Your Application
+
+Mount the dashboard into an existing Go HTTP server:
+
+```go
+import (
+	"net/http"
+
+	"github.com/bmorton/go-pg-extras/pgextrashttp"
+)
+
+handler := pgextrashttp.NewHandler(client, pgextrashttp.HandlerOptions{
+	PathPrefix:        "/pg_extras",
+	BasicAuthUsername: "admin",
+	BasicAuthPassword: "secret",
+	EnabledActions:    []string{"kill_all", "pg_stat_statements_reset"},
+})
+
+mux := http.NewServeMux()
+mux.Handle("/pg_extras/", handler)
+// ... add your other routes
+http.ListenAndServe(":8080", mux)
+```
+
+Set `PublicDashboard: true` to disable authentication entirely (useful for internal/development environments).
+
+## Available Queries
+
+### Query Performance
+
+| Query | Description |
+|---|---|
+| `outliers` | Queries with longest execution time (requires `pg_stat_statements`) |
+| `calls` | Most frequently executed queries |
+| `long_running_queries` | Currently running queries exceeding a duration threshold |
+
+### Cache Efficiency
+
+| Query | Description |
+|---|---|
+| `cache_hit` | Overall buffer cache hit ratios for indexes and tables |
+| `index_cache_hit` | Per-index buffer cache hit breakdown |
+| `table_cache_hit` | Per-table buffer cache hit breakdown |
+| `buffercache_stats` | Shared buffer cache statistics |
+| `buffercache_usage` | Shared buffer cache usage by relation |
+
+### Index Analysis
+
+| Query | Description |
+|---|---|
+| `index_usage` | Index hit rate per table |
+| `index_size` | Size of each index |
+| `index_scans` | Number of scans per index |
+| `total_index_size` | Total index size per table |
+| `indexes` | All indexes with size and scan count |
+| `unused_indexes` | Indexes with low scan counts on large tables |
+| `duplicate_indexes` | Indexes with redundant column sets |
+| `null_indexes` | Indexes with high NULL ratios |
+
+### Table Analysis
+
+| Query | Description |
+|---|---|
+| `table_size` | Table size excluding indexes |
+| `total_table_size` | Table size including indexes and TOAST |
+| `table_indexes_size` | Combined index size per table |
+| `table_overview` | Table sizes with estimated row counts |
+| `table_index_scans` | Index scan counts per table |
+| `records_rank` | Estimated row counts (descending) |
+| `scan_activity` | Sequential vs. index scans per table |
+| `seq_scans` | Sequential scan counts |
+| `bloat` | Table and index bloat estimation |
+| `table_schema` | Column definitions for a specific table |
+| `table_schemas` | Column definitions for all tables |
+| `tables` | All tables with size information |
+
+### Foreign Keys
+
+| Query | Description |
+|---|---|
+| `foreign_keys` | All foreign key constraints |
+| `table_foreign_keys` | Foreign key constraints for a specific table |
+
+### Vacuum & Maintenance
+
+| Query | Description |
+|---|---|
+| `vacuum_stats` | Dead rows, autovacuum thresholds, and health |
+| `vacuum_progress` | Progress of running VACUUM operations |
+| `vacuum_io_stats` | Vacuum I/O statistics (PG 13+) |
+| `analyze_progress` | Progress of running ANALYZE operations |
+
+### Locks & Connections
+
+| Query | Description |
+|---|---|
+| `locks` | Current locks (waiting and held) |
+| `all_locks` | Extended lock information |
+| `blocking` | Queries blocking other queries |
+| `connections` | Active connection counts |
+| `kill_pid` | Terminate a specific backend by PID |
+| `kill_all` | Terminate all active backends |
+
+### Extensions & Settings
+
+| Query | Description |
+|---|---|
+| `extensions` | Installed PostgreSQL extensions |
+| `db_settings` | Server configuration parameters |
+| `ssl_used` | Whether the current connection uses SSL |
+
+### Other
+
+| Query | Description |
+|---|---|
+| `mandelbrot` | ASCII Mandelbrot set (just for fun) |
+
+## Health Check (Diagnose)
+
+The `diagnose` command runs automated health checks against your database and reports each with an OK, WARNING, or FAIL status:
+
+| Check | Threshold |
+|---|---|
+| Table cache hit rate | ≥ 98.5% |
+| Index cache hit rate | ≥ 98.5% |
+| Unused indexes | None on large tables |
+| Null indexes | No indexes with high NULL fraction |
+| Bloat | No significant bloat |
+| Duplicate indexes | No redundant indexes |
+| Outliers | No single query dominating execution time |
+| SSL connection | SSL in use |
+| Connection count | Within limits |
+| Long running queries | None exceeding threshold |
+
+Run via CLI (`pgextras diagnose`), library (`client.Diagnose(ctx)`), or web dashboard (`/pg_extras/diagnose`).
+
+## Query Sources & Acknowledgments
+
+The SQL queries used in this project originate from several open-source projects and community resources. All credit for the original queries and concepts belongs to their respective authors:
+
+- **[heroku-pg-extras](https://github.com/heroku/heroku-pg-extras)** — the original collection of PostgreSQL diagnostic queries
+- **[rails-pg-extras](https://github.com/pawurb/rails-pg-extras)** and **[ruby-pg-extras](https://github.com/pawurb/ruby-pg-extras)** — the Ruby/Rails implementations that this project is ported from
+- **[PostgreSQL Unused Index Size](https://hakibenita.com/postgresql-unused-index-size)** by Haki Benita
+- **[Useful SQLs to Check Contents of PostgreSQL shared_buffers](https://sites.google.com/site/itmyshare/database-tips-and-examples/postgres/useful-sqls-to-check-contents-of-postgresql-shared_buffer)**
+- **[Index Maintenance](https://wiki.postgresql.org/wiki/Index_Maintenance)** — PostgreSQL Wiki
+
+This project is an independent Go port. It is **not** affiliated with, endorsed by, or officially connected to Heroku, the rails-pg-extras project, or any of the other sources listed above.
 
 ## License
 

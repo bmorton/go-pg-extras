@@ -13,5 +13,15 @@
   "containerEnv": {
     "DATABASE_URL": "postgres://pgextras:pgextras@db:5432/pgextras_test?sslmode=disable"
   },
-  "forwardPorts": [5432]
+  "forwardPorts": [
+    5432
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "yzhang.markdown-all-in-one",
+        "shd101wyy.markdown-preview-enhanced"
+      ]
+    }
+  }
 }
