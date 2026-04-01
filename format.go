@@ -55,7 +55,9 @@ func formatTable[T any](w io.Writer, results []T, title string) error {
 	}
 
 	for _, row := range rows {
-		table.Append(row)
+		if err := table.Append(row); err != nil {
+			return err
+		}
 	}
 	return table.Render()
 }
