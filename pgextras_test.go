@@ -2,7 +2,6 @@ package pgextras
 
 import (
 	"database/sql"
-	"os"
 	"strings"
 	"testing"
 )
@@ -19,7 +18,7 @@ func TestNewNilDB(t *testing.T) {
 
 func TestNewDefaultSchema(t *testing.T) {
 	// Ensure env var doesn't interfere.
-	os.Unsetenv("PG_EXTRAS_SCHEMA")
+	t.Setenv("PG_EXTRAS_SCHEMA", "")
 
 	// We need a non-nil *sql.DB but won't use it for queries.
 	db := &sql.DB{}
@@ -36,7 +35,7 @@ func TestNewDefaultSchema(t *testing.T) {
 }
 
 func TestNewExplicitSchema(t *testing.T) {
-	os.Unsetenv("PG_EXTRAS_SCHEMA")
+	t.Setenv("PG_EXTRAS_SCHEMA", "")
 
 	db := &sql.DB{}
 	c, err := New(Config{DB: db, Schema: "custom"})
