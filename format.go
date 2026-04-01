@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/tw"
 )
 
 // Format controls how query results are rendered.
@@ -38,20 +39,25 @@ func FormatResults[T any](w io.Writer, results []T, format Format, title string)
 func formatTable[T any](w io.Writer, results []T, title string) error {
 	headers, rows := extractHeadersAndRows(results)
 
-	table := tablewriter.NewWriter(w)
-	table.SetHeader(headers)
-	table.SetAutoWrapText(false)
-	table.SetAutoFormatHeaders(false)
+	table := tablewriter.NewTable(w,
+		tablewriter.WithRowAutoWrap(tw.WrapNone),
+		tablewriter.WithHeaderAutoFormat(tw.Off),
+	)
+
+	headerArgs := make([]any, len(headers))
+	for i, h := range headers {
+		headerArgs[i] = h
+	}
+	table.Header(headerArgs...)
 
 	if title != "" {
-		table.SetCaption(true, title)
+		table.Caption(tw.Caption{Text: title})
 	}
 
 	for _, row := range rows {
 		table.Append(row)
 	}
-	table.Render()
-	return nil
+	return table.Render()
 }
 
 func formatJSON[T any](w io.Writer, results []T) error {
