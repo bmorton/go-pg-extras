@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-go-pg-extras
     permissions:
       contents: read
     steps:
@@ -20,7 +20,7 @@ jobs:
         uses: ./.github/actions/run-lint
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-go-pg-extras
     permissions:
       contents: read
     steps:
@@ -32,7 +32,7 @@ jobs:
         uses: ./.github/actions/run-tests
 
   test-integration:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-go-pg-extras
     permissions:
       contents: read
     services:
