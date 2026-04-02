@@ -40,11 +40,24 @@ func NewHandler(client *pgextras.Client, opts HandlerOptions) http.Handler {
 	}
 
 	funcMap := template.FuncMap{
-		"deref": func(s *string) string {
-			if s == nil {
+		"deref": func(v any) string {
+			if v == nil {
 				return ""
 			}
-			return *s
+			switch p := v.(type) {
+			case *string:
+				if p == nil {
+					return ""
+				}
+				return *p
+			case *int64:
+				if p == nil {
+					return ""
+				}
+				return fmt.Sprintf("%d", *p)
+			default:
+				return fmt.Sprintf("%v", v)
+			}
 		},
 	}
 	tmpl := template.Must(template.New("").Funcs(funcMap).ParseFS(templateFiles, "templates/*.html"))
@@ -141,6 +154,10 @@ func handleQuery(w http.ResponseWriter, r *http.Request, tmpl *template.Template
 		handleScanActivity(w, r, tmpl, client, opts)
 		return
 	}
+	if queryName == "vacuum_maintenance" || queryName == "vacuum_stats" || queryName == "vacuum_progress" || queryName == "analyze_progress" || queryName == "vacuum_io_stats" {
+		handleVacuumMaintenance(w, r, tmpl, client, opts)
+		return
+	}
 
 	ctx := r.Context()
 	headers, rows, err := executeQuery(ctx, client, queryName)
@@ -199,6 +216,45 @@ func handleScanActivity(w http.ResponseWriter, r *http.Request, tmpl *template.T
 		data["Error"] = err.Error()
 	}
 	renderLayout(w, tmpl, "scan_activity", data)
+}
+
+func handleVacuumMaintenance(w http.ResponseWriter, r *http.Request, tmpl *template.Template, client *pgextras.Client, opts HandlerOptions) {
+	ctx := r.Context()
+	data := map[string]any{
+		"Title":     "Vacuum & Maintenance",
+		"Prefix":    opts.PathPrefix,
+		"ActiveNav": "vacuum_maintenance",
+	}
+
+	vacuumStats, err := client.VacuumStats(ctx)
+	if err != nil {
+		data["Error"] = err.Error()
+	} else {
+		data["VacuumStats"] = vacuumStats
+	}
+
+	vacuumProgress, err := client.VacuumProgress(ctx)
+	if err != nil {
+		data["VacuumProgressError"] = err.Error()
+	} else {
+		data["VacuumProgress"] = vacuumProgress
+	}
+
+	analyzeProgress, err := client.AnalyzeProgress(ctx)
+	if err != nil {
+		data["AnalyzeProgressError"] = err.Error()
+	} else {
+		data["AnalyzeProgress"] = analyzeProgress
+	}
+
+	vacuumIOStats, err := client.VacuumIOStats(ctx)
+	if err != nil {
+		data["VacuumIOStatsError"] = err.Error()
+	} else {
+		data["VacuumIOStats"] = vacuumIOStats
+	}
+
+	renderLayout(w, tmpl, "vacuum_maintenance", data)
 }
 
 func handleDiagnose(w http.ResponseWriter, r *http.Request, tmpl *template.Template, client *pgextras.Client, opts HandlerOptions) {
