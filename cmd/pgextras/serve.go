@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -86,13 +87,8 @@ func serveCommand() *cli.Command {
 
 			logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 
-			prefix := c.String("path-prefix")
-			if prefix == "/" {
-				prefix = ""
-			}
-
 			handler := pgextrashttp.NewHandler(client, pgextrashttp.HandlerOptions{
-				PathPrefix:        prefix,
+				PathPrefix:        c.String("path-prefix"),
 				BasicAuthUsername: c.String("auth-user"),
 				BasicAuthPassword: c.String("auth-password"),
 				PublicDashboard:   c.Bool("public"),
@@ -100,6 +96,7 @@ func serveCommand() *cli.Command {
 				Logger:            logger,
 			})
 
+			prefix := strings.TrimRight(c.String("path-prefix"), "/")
 			mux := http.NewServeMux()
 			if prefix != "" {
 				mux.Handle(prefix+"/", handler)

@@ -23,9 +23,6 @@ var staticFiles embed.FS
 
 // NewHandler returns an http.Handler that serves the pg-extras dashboard.
 func NewHandler(client *pgextras.Client, opts HandlerOptions) http.Handler {
-	if opts.PathPrefix == "" {
-		opts.PathPrefix = "/pg_extras"
-	}
 	opts.PathPrefix = strings.TrimRight(opts.PathPrefix, "/")
 	opts.Client = client
 

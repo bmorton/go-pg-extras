@@ -9,7 +9,7 @@ import (
 // HandlerOptions configures the HTTP dashboard.
 type HandlerOptions struct {
 	// PathPrefix is prepended to all routes (e.g., "/pg_extras").
-	// Default: "/pg_extras"
+	// Default: "/" (root)
 	PathPrefix string
 
 	// BasicAuthUsername and BasicAuthPassword enable HTTP Basic Auth.
