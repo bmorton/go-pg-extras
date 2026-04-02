@@ -142,19 +142,17 @@ func renderIndex(w http.ResponseWriter, tmpl *template.Template, opts HandlerOpt
 }
 
 func handleQuery(w http.ResponseWriter, r *http.Request, tmpl *template.Template, client *pgextras.Client, opts HandlerOptions, queryName string) {
-	if queryName == "table_schemas" {
+	switch queryName {
+	case "table_schemas":
 		handleTableSchemas(w, r, tmpl, client, opts)
 		return
-	}
-	if queryName == "table_overview" {
+	case "table_overview":
 		handleTableOverview(w, r, tmpl, client, opts)
 		return
-	}
-	if queryName == "scan_activity" {
+	case "scan_activity":
 		handleScanActivity(w, r, tmpl, client, opts)
 		return
-	}
-	if queryName == "vacuum_maintenance" || queryName == "vacuum_stats" || queryName == "vacuum_progress" || queryName == "analyze_progress" || queryName == "vacuum_io_stats" {
+	case "vacuum_maintenance", "vacuum_stats", "vacuum_progress", "analyze_progress", "vacuum_io_stats":
 		handleVacuumMaintenance(w, r, tmpl, client, opts)
 		return
 	}
