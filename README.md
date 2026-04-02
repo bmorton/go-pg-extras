@@ -22,6 +22,20 @@ A Go port of [rails-pg-extras](https://github.com/pawurb/rails-pg-extras), provi
 - **Secure web dashboard** — basic auth, TLS, and configurable path prefix
 - **No ORM dependency** — uses stdlib `database/sql`; bring your own `*sql.DB`
 
+## Acknowledgments
+
+The SQL queries used in this project originate from several open-source projects and community resources. All credit for the original queries and concepts belongs to their respective authors:
+
+- **[heroku-pg-extras](https://github.com/heroku/heroku-pg-extras)** — the original collection of PostgreSQL diagnostic queries
+- **[rails-pg-extras](https://github.com/pawurb/rails-pg-extras)** and **[ruby-pg-extras](https://github.com/pawurb/ruby-pg-extras)** — the Ruby/Rails implementations that this project is ported from
+- **[PostgreSQL Unused Index Size](https://hakibenita.com/postgresql-unused-index-size)** by Haki Benita
+- **[Useful SQLs to Check Contents of PostgreSQL shared_buffers](https://sites.google.com/site/itmyshare/database-tips-and-examples/postgres/useful-sqls-to-check-contents-of-postgresql-shared_buffer)**
+- **[Index Maintenance](https://wiki.postgresql.org/wiki/Index_Maintenance)** — PostgreSQL Wiki
+
+This project is an independent Go port. It is **not** affiliated with, endorsed by, or officially connected to Heroku, the rails-pg-extras project, or any of the other sources listed above.
+
+This project is also built with the use of GitHub Copilot tooling under human oversight and review.
+
 ## Installation
 
 ### Go library
@@ -260,18 +274,6 @@ The `diagnose` command runs automated health checks against your database and re
 | Long running queries | None exceeding threshold |
 
 Run via CLI (`pgextras diagnose`), library (`client.Diagnose(ctx)`), or web dashboard (`/pg_extras/diagnose`).
-
-## Query Sources & Acknowledgments
-
-The SQL queries used in this project originate from several open-source projects and community resources. All credit for the original queries and concepts belongs to their respective authors:
-
-- **[heroku-pg-extras](https://github.com/heroku/heroku-pg-extras)** — the original collection of PostgreSQL diagnostic queries
-- **[rails-pg-extras](https://github.com/pawurb/rails-pg-extras)** and **[ruby-pg-extras](https://github.com/pawurb/ruby-pg-extras)** — the Ruby/Rails implementations that this project is ported from
-- **[PostgreSQL Unused Index Size](https://hakibenita.com/postgresql-unused-index-size)** by Haki Benita
-- **[Useful SQLs to Check Contents of PostgreSQL shared_buffers](https://sites.google.com/site/itmyshare/database-tips-and-examples/postgres/useful-sqls-to-check-contents-of-postgresql-shared_buffer)**
-- **[Index Maintenance](https://wiki.postgresql.org/wiki/Index_Maintenance)** — PostgreSQL Wiki
-
-This project is an independent Go port. It is **not** affiliated with, endorsed by, or officially connected to Heroku, the rails-pg-extras project, or any of the other sources listed above.
 
 ## Configuration Reference
 
