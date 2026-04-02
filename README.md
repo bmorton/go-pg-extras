@@ -273,6 +273,79 @@ The SQL queries used in this project originate from several open-source projects
 
 This project is an independent Go port. It is **not** affiliated with, endorsed by, or officially connected to Heroku, the rails-pg-extras project, or any of the other sources listed above.
 
+## Configuration Reference
+
+### Environment Variables
+
+| Variable | Description | Default |
+|---|---|---|
+| `DATABASE_URL` | PostgreSQL connection string | — |
+| `PG_EXTRAS_SCHEMA` | Schema to inspect | `public` |
+| `PGEXTRAS_AUTH_USER` | HTTP dashboard Basic Auth username | — |
+| `PGEXTRAS_AUTH_PASSWORD` | HTTP dashboard Basic Auth password | — |
+| `PGEXTRAS_PUBLIC_DASHBOARD` | Set to `"true"` to disable dashboard auth | — |
+
+### CLI Flags
+
+| Flag | Alias | Description |
+|---|---|---|
+| `--database-url` | `-d` | PostgreSQL connection string (overrides `DATABASE_URL`) |
+| `--schema` | | Schema to inspect (overrides `PG_EXTRAS_SCHEMA`) |
+| `--format` | `-f` | Output format: `table`, `json`, or `csv` (default: `table`) |
+| `--limit` | | Limit number of results (for `outliers`, `calls`, etc.) |
+| `--threshold` | | Duration threshold, e.g. `"500ms"`, `"1s"`, `"2m"` (for `long_running_queries`) |
+| `--table-name` | | Table name (for `table_schema`, `table_foreign_keys`) |
+
+### Serve Subcommand
+
+| Flag | Description | Default |
+|---|---|---|
+| `--addr`, `-a` | Listen address | `:8080` |
+| `--path-prefix` | URL path prefix | `/` |
+| `--public` | Disable authentication | `false` |
+| `--auth-user` | Basic Auth username | `PGEXTRAS_AUTH_USER` env |
+| `--auth-password` | Basic Auth password | `PGEXTRAS_AUTH_PASSWORD` env |
+| `--enable-action` | Admin action to enable (repeatable) | — |
+| `--tls-cert` | Path to TLS certificate file | — |
+| `--tls-key` | Path to TLS private key file | — |
+
+## Troubleshooting
+
+### `pg_stat_statements` not installed
+
+Queries like `outliers` and `calls` require the `pg_stat_statements` extension. If you get an error about a missing relation:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+```
+
+You may also need to add it to `shared_preload_libraries` in `postgresql.conf` and restart PostgreSQL.
+
+### Permission errors
+
+Some queries access system catalogs that require superuser or `pg_monitor` role membership. Grant the necessary role:
+
+```sql
+GRANT pg_monitor TO your_user;
+```
+
+### Connection issues
+
+Make sure your `DATABASE_URL` is correct and the database is reachable. The connection string format is:
+
+```
+postgres://user:password@host:port/dbname?sslmode=disable
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-change`)
+3. Make your changes and add tests
+4. Run `make check` to verify formatting, linting, and tests
+5. Commit and push your branch
+6. Open a Pull Request
+
 ## License
 
 MIT

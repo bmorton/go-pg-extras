@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/urfave/cli/v2"
@@ -143,9 +144,13 @@ func executeAndFormat(ctx context.Context, client *pgextras.Client, name string,
 		}
 		return pgextras.FormatResults(os.Stdout, r, format, "Queries with highest frequency of execution")
 	case "long_running_queries":
-		threshold := c.String("threshold")
-		if threshold == "" {
-			threshold = "500 milliseconds"
+		var threshold time.Duration
+		if s := c.String("threshold"); s != "" {
+			var err error
+			threshold, err = time.ParseDuration(s)
+			if err != nil {
+				return fmt.Errorf("invalid threshold %q: %w (use Go duration syntax, e.g. '500ms', '1s', '2m')", s, err)
+			}
 		}
 		r, err := client.LongRunningQueries(ctx, pgextras.LongRunningQueriesParams{Threshold: threshold})
 		if err != nil {

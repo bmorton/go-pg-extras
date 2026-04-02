@@ -1,5 +1,7 @@
 package pgextras
 
+import "time"
+
 // OutliersParams configures the Outliers query.
 type OutliersParams struct {
 	Limit int // default: 10
@@ -12,7 +14,7 @@ type CallsParams struct {
 
 // LongRunningQueriesParams configures the LongRunningQueries query.
 type LongRunningQueriesParams struct {
-	Threshold string // default: "500 milliseconds" (PG interval syntax)
+	Threshold time.Duration // default: 500ms
 }
 
 // LocksParams configures the Locks query.

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestNewNilDB(t *testing.T) {
@@ -153,5 +154,61 @@ func TestMapColumnsToFieldsNoMatch(t *testing.T) {
 
 	if len(dest) != 2 {
 		t.Fatalf("expected 2 scan destinations, got %d", len(dest))
+	}
+}
+
+func TestFormatPGInterval(t *testing.T) {
+	tests := []struct {
+		d    time.Duration
+		want string
+	}{
+		{500 * time.Millisecond, "500 milliseconds"},
+		{1 * time.Second, "1000 milliseconds"},
+		{2 * time.Minute, "120000 milliseconds"},
+		{1 * time.Hour, "3600000 milliseconds"},
+	}
+	for _, tt := range tests {
+		got := formatPGInterval(tt.d)
+		if got != tt.want {
+			t.Errorf("formatPGInterval(%v) = %q, want %q", tt.d, got, tt.want)
+		}
+	}
+}
+
+func TestValidateIdentifier(t *testing.T) {
+	valid := []string{
+		"public",
+		"my_table",
+		"MySchema",
+		"schema1.table2",
+		"_private",
+	}
+	for _, v := range valid {
+		if err := ValidateIdentifier(v); err != nil {
+			t.Errorf("ValidateIdentifier(%q) unexpected error: %v", v, err)
+		}
+	}
+
+	invalid := []string{
+		"'; DROP TABLE foo;--",
+		"table name",
+		"",
+		"1table",
+		"table-name",
+		"table;name",
+	}
+	for _, v := range invalid {
+		if err := ValidateIdentifier(v); err == nil {
+			t.Errorf("ValidateIdentifier(%q) expected error, got nil", v)
+		}
+	}
+}
+
+func TestNewInvalidSchema(t *testing.T) {
+	t.Setenv("PG_EXTRAS_SCHEMA", "'; DROP TABLE foo;--")
+	db := &sql.DB{}
+	_, err := New(Config{DB: db})
+	if err == nil {
+		t.Fatal("expected error for invalid schema")
 	}
 }

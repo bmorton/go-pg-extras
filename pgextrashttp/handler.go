@@ -112,6 +112,8 @@ func NewHandler(client *pgextras.Client, opts HandlerOptions) http.Handler {
 	var handler http.Handler = mux
 	if !opts.PublicDashboard && opts.BasicAuthUsername != "" && opts.BasicAuthPassword != "" {
 		handler = basicAuth(handler, opts.BasicAuthUsername, opts.BasicAuthPassword)
+	} else if !opts.PublicDashboard {
+		opts.Logger.Warn("pg-extras dashboard has no authentication configured and PublicDashboard is not explicitly enabled — dashboard is publicly accessible")
 	}
 	handler = recoveryMiddleware(handler, opts.Logger)
 	handler = requestLogger(handler, opts.Logger)
@@ -220,7 +222,9 @@ func handleAPIQuery(w http.ResponseWriter, r *http.Request, client *pgextras.Cli
 	ctx := r.Context()
 	result, err := executeQueryRaw(ctx, client, queryName)
 	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		// Log the actual error internally; return a generic message to the client.
+		slog.Default().Error("API query failed", "query", queryName, "error", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Internal Server Error"})
 		return
 	}
 	writeJSON(w, http.StatusOK, result)
@@ -229,7 +233,8 @@ func handleAPIQuery(w http.ResponseWriter, r *http.Request, client *pgextras.Cli
 func handleAPIDiagnose(w http.ResponseWriter, r *http.Request, client *pgextras.Client) {
 	results, err := client.Diagnose(r.Context())
 	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		slog.Default().Error("API diagnose failed", "error", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Internal Server Error"})
 		return
 	}
 	writeJSON(w, http.StatusOK, results)
@@ -264,7 +269,8 @@ func handleAction(w http.ResponseWriter, r *http.Request, client *pgextras.Clien
 	}
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		opts.Logger.Error("action failed", "action", action, "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, r, opts.PathPrefix+"/", http.StatusSeeOther)
@@ -273,13 +279,15 @@ func handleAction(w http.ResponseWriter, r *http.Request, client *pgextras.Clien
 func renderLayout(w http.ResponseWriter, tmpl *template.Template, name string, data map[string]any) {
 	var content strings.Builder
 	if err := tmpl.ExecuteTemplate(&content, name, data); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		slog.Default().Error("template execution failed", "template", name, "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 	data["Content"] = template.HTML(content.String())
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := tmpl.ExecuteTemplate(w, "layout.html", data); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		slog.Default().Error("layout template execution failed", "template", name, "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 

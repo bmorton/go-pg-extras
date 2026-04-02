@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 )
 
 // CacheHit returns overall buffer cache hit ratios for indexes and tables.
@@ -73,12 +74,12 @@ func (c *Client) Calls(ctx context.Context, params ...CallsParams) ([]CallsResul
 
 // LongRunningQueries returns currently running queries exceeding a duration threshold.
 func (c *Client) LongRunningQueries(ctx context.Context, params ...LongRunningQueriesParams) ([]LongRunningQueriesResult, error) {
-	p := LongRunningQueriesParams{Threshold: "500 milliseconds"}
-	if len(params) > 0 && params[0].Threshold != "" {
+	p := LongRunningQueriesParams{Threshold: 500 * time.Millisecond}
+	if len(params) > 0 && params[0].Threshold > 0 {
 		p.Threshold = params[0].Threshold
 	}
 	query, err := c.loadSQL("long_running_queries", map[string]string{
-		"threshold": p.Threshold,
+		"threshold": formatPGInterval(p.Threshold),
 	})
 	if err != nil {
 		return nil, err
@@ -247,6 +248,9 @@ func (c *Client) TableSchema(ctx context.Context, params TableSchemaParams) ([]T
 	if params.TableName == "" {
 		return nil, fmt.Errorf("%w: TableName", ErrRequiredParam)
 	}
+	if err := ValidateIdentifier(params.TableName); err != nil {
+		return nil, err
+	}
 	query, err := c.loadSQL("table_schema", map[string]string{
 		"table_name": params.TableName,
 	})
@@ -269,6 +273,9 @@ func (c *Client) TableSchemas(ctx context.Context) ([]TableSchemasResult, error)
 func (c *Client) TableForeignKeys(ctx context.Context, params TableForeignKeysParams) ([]TableForeignKeysResult, error) {
 	if params.TableName == "" {
 		return nil, fmt.Errorf("%w: TableName", ErrRequiredParam)
+	}
+	if err := ValidateIdentifier(params.TableName); err != nil {
+		return nil, err
 	}
 	query, err := c.loadSQL("table_foreign_keys", map[string]string{
 		"table_name": params.TableName,

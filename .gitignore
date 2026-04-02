@@ -1,0 +1,10 @@
+# Compiled binaries
+bin/
+dist/
+
+# Test output
+*.out
+coverage*.out
+
+# OS files
+.DS_Store

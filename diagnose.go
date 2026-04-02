@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Diagnose runs all health checks and returns results.
@@ -271,7 +272,7 @@ func (c *Client) diagnoseConnectionCount(ctx context.Context) DiagnoseResult {
 
 func (c *Client) diagnoseLongRunningQueries(ctx context.Context) DiagnoseResult {
 	result := DiagnoseResult{CheckName: "Long Running Queries"}
-	queries, err := c.LongRunningQueries(ctx, LongRunningQueriesParams{Threshold: "500 milliseconds"})
+	queries, err := c.LongRunningQueries(ctx, LongRunningQueriesParams{Threshold: 500 * time.Millisecond})
 	if err != nil {
 		result.Severity = SeverityWarn
 		result.Message = fmt.Sprintf("Error: %v", err)

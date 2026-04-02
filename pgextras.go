@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	sqlembed "github.com/bmorton/go-pg-extras/sql"
 )
@@ -19,6 +22,9 @@ var (
 
 	// ErrRequiredParam is returned when a required parameter is missing.
 	ErrRequiredParam = errors.New("required parameter is missing")
+
+	// ErrInvalidParam is returned when a parameter value fails validation.
+	ErrInvalidParam = errors.New("invalid parameter value")
 
 	// ErrUnsupportedPGVersion is returned when a query requires a newer PG version.
 	ErrUnsupportedPGVersion = errors.New("query requires a newer PostgreSQL version")
@@ -53,6 +59,9 @@ func New(cfg Config) (*Client, error) {
 	if schema == "" {
 		schema = "public"
 	}
+	if err := ValidateIdentifier(schema); err != nil {
+		return nil, fmt.Errorf("pgextras: invalid schema: %w", err)
+	}
 	return &Client{
 		db:     cfg.DB,
 		schema: schema,
@@ -67,6 +76,23 @@ func (c *Client) DB() *sql.DB {
 // Schema returns the configured schema.
 func (c *Client) Schema() string {
 	return c.schema
+}
+
+// validIdentifier matches a simple SQL identifier (letters, digits, underscores, dots).
+var validIdentifier = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_.]*$`)
+
+// ValidateIdentifier validates a SQL identifier (table name, schema name).
+func ValidateIdentifier(s string) error {
+	if !validIdentifier.MatchString(s) {
+		return fmt.Errorf("%w: identifier %q contains invalid characters", ErrInvalidParam, s)
+	}
+	return nil
+}
+
+// formatPGInterval converts a time.Duration to a PostgreSQL interval string
+// using integer milliseconds, which is safe from injection.
+func formatPGInterval(d time.Duration) string {
+	return strconv.FormatInt(d.Milliseconds(), 10) + " milliseconds"
 }
 
 // loadSQL reads an embedded SQL file and substitutes parameters.

@@ -59,7 +59,7 @@ func queryCommand() *cli.Command {
 			},
 			&cli.StringFlag{
 				Name:  "threshold",
-				Usage: "Duration threshold (e.g., '1 second')",
+				Usage: "Duration threshold (e.g., '500ms', '1s', '2m')",
 			},
 			&cli.StringFlag{
 				Name:  "table-name",
