@@ -10,7 +10,7 @@ on:
 
 jobs:
   tag:
-    runs-on: namespace-profile-go-pg-extras
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:

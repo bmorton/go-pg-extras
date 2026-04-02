@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: namespace-profile-go-pg-extras
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

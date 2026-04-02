@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   lint:
-    runs-on: namespace-profile-go-pg-extras
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
@@ -24,7 +24,7 @@ jobs:
         uses: ./.github/actions/run-lint
 
   test:
-    runs-on: namespace-profile-go-pg-extras
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
@@ -36,7 +36,7 @@ jobs:
         uses: ./.github/actions/run-tests
 
   test-integration:
-    runs-on: namespace-profile-go-pg-extras
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     services:
