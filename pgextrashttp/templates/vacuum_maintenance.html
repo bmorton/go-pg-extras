@@ -1,0 +1,318 @@
+{{define "vacuum_maintenance"}}
+<h1 class="text-2xl font-bold mb-4">Vacuum & Maintenance</h1>
+
+{{if .Error}}
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    {{.Error}}
+</div>
+{{end}}
+
+<div class="mb-6">
+    <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-6" id="vacuum-tabs">
+            <button class="tab-btn border-b-2 border-blue-500 text-blue-600 py-2 px-1 text-sm font-medium" data-tab="vacuum-stats">Vacuum Stats</button>
+            <button class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium" data-tab="vacuum-progress">Vacuum Progress</button>
+            <button class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium" data-tab="analyze-progress">Analyze Progress</button>
+            <button class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium" data-tab="io-stats">Vacuum I/O Stats</button>
+        </nav>
+    </div>
+</div>
+
+<!-- Vacuum Stats Tab -->
+<div class="tab-panel" id="panel-vacuum-stats">
+{{if .VacuumStats}}
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200" id="vstats-table">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="string" data-col="0">
+                    Schema <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="string" data-col="1">
+                    Table <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="string" data-col="2">
+                    Last Manual Vacuum <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="number" data-col="3">
+                    Manual Vacuum Count <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="string" data-col="4">
+                    Last Autovacuum <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="number" data-col="5">
+                    Autovacuum Count <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="number" data-col="6">
+                    Row Count <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="number" data-col="7">
+                    Dead Rows <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Autovacuum Threshold
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Inserts Since Vacuum
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Insert Threshold
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none" data-sort="string" data-col="11">
+                    Expect Autovacuum <span class="sort-arrow">&#x25B4;&#x25BE;</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200" id="vstats-body">
+            {{range .VacuumStats}}
+            <tr class="hover:bg-gray-50" data-manual-count="{{.ManualVacuumCount}}" data-auto-count="{{.AutovacuumCount}}" data-rowcount="{{.RowCount}}" data-dead="{{.DeadRowCount}}">
+                <td class="px-4 py-2 text-sm text-gray-900">{{.Schema}}</td>
+                <td class="px-4 py-2 text-sm font-medium text-gray-900">{{.Table}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">{{deref .LastManualVacuum}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.ManualVacuumCount}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">{{deref .LastAutovacuum}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.AutovacuumCount}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.RowCount}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.DeadRowCount}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .DeadTupAutovacuumThreshold}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .NInsSinceVacuum}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .InsertAutovacuumThreshold}}</td>
+                <td class="px-4 py-2 text-sm {{if deref .ExpectAutovacuum}}text-yellow-700 font-medium{{else}}text-gray-900{{end}}">{{deref .ExpectAutovacuum}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{else if not .Error}}
+<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+    No vacuum stats found.
+</div>
+{{end}}
+</div>
+
+<!-- Vacuum Progress Tab -->
+<div class="tab-panel hidden" id="panel-vacuum-progress">
+{{if .VacuumProgress}}
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Database</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schema</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Table</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PID</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phase</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heap Blks Total</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heap Blks Scanned</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heap Blks Vacuumed</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Index Vacuum Count</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {{range .VacuumProgress}}
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 text-sm text-gray-900">{{.Database}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">{{.Schema}}</td>
+                <td class="px-4 py-2 text-sm font-medium text-gray-900">{{.Table}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 tabular-nums">{{.PID}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">{{.Phase}}</span>
+                </td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.HeapBlksTotal}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.HeapBlksScanned}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.HeapBlksVacuumed}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.IndexVacuumCount}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{else if not .VacuumProgressError}}
+<div class="bg-gray-50 border border-gray-200 text-gray-600 px-4 py-3 rounded">
+    No vacuum operations currently in progress.
+</div>
+{{end}}
+{{if .VacuumProgressError}}
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+    {{.VacuumProgressError}}
+</div>
+{{end}}
+</div>
+
+<!-- Analyze Progress Tab -->
+<div class="tab-panel hidden" id="panel-analyze-progress">
+{{if .AnalyzeProgress}}
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Database</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schema</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Table</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PID</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phase</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sample Blks Total</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sample Blks Scanned</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ext Stats Total</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ext Stats Computed</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {{range .AnalyzeProgress}}
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 text-sm text-gray-900">{{.Database}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">{{.Schema}}</td>
+                <td class="px-4 py-2 text-sm font-medium text-gray-900">{{.Table}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 tabular-nums">{{.PID}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">{{.Phase}}</span>
+                </td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.SampleBlksTotal}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.SampleBlksScanned}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.ExtStatsTotal}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{.ExtStatsComputed}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{else if not .AnalyzeProgressError}}
+<div class="bg-gray-50 border border-gray-200 text-gray-600 px-4 py-3 rounded">
+    No analyze operations currently in progress.
+</div>
+{{end}}
+{{if .AnalyzeProgressError}}
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+    {{.AnalyzeProgressError}}
+</div>
+{{end}}
+</div>
+
+<!-- Vacuum I/O Stats Tab -->
+<div class="tab-panel hidden" id="panel-io-stats">
+{{if .VacuumIOStats}}
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Backend Type</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Object</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Context</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reads</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Read Time</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Writes</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Write Time</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Writebacks</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Writeback Time</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Extends</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Extend Time</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fsyncs</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fsync Time</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reuses</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Evictions</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stats Reset</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {{range .VacuumIOStats}}
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 text-sm font-medium text-gray-900">{{.BackendType}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">{{.Object}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">{{.Context}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .Reads}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .ReadTime}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .Writes}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .WriteTime}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .Writebacks}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .WritebackTime}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .Extends}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .ExtendTime}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .Fsyncs}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .FsyncTime}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .Reuses}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900 text-right tabular-nums">{{deref .Evictions}}</td>
+                <td class="px-4 py-2 text-sm text-gray-900">{{deref .StatsReset}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{else if not .VacuumIOStatsError}}
+<div class="bg-gray-50 border border-gray-200 text-gray-600 px-4 py-3 rounded">
+    No vacuum I/O stats available.
+</div>
+{{end}}
+{{if .VacuumIOStatsError}}
+<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+    {{.VacuumIOStatsError}}
+</div>
+{{end}}
+</div>
+
+<script>
+(function() {
+    // Tab switching
+    var tabs = document.querySelectorAll('#vacuum-tabs .tab-btn');
+    var panels = document.querySelectorAll('.tab-panel');
+
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            var target = tab.getAttribute('data-tab');
+            tabs.forEach(function(t) {
+                t.classList.remove('border-blue-500', 'text-blue-600');
+                t.classList.add('border-transparent', 'text-gray-500');
+            });
+            tab.classList.remove('border-transparent', 'text-gray-500');
+            tab.classList.add('border-blue-500', 'text-blue-600');
+            panels.forEach(function(p) { p.classList.add('hidden'); });
+            document.getElementById('panel-' + target).classList.remove('hidden');
+        });
+    });
+
+    // Sortable vacuum stats table
+    var table = document.getElementById('vstats-table');
+    if (table) {
+        var tbody = document.getElementById('vstats-body');
+        var headers = table.querySelectorAll('th[data-sort]');
+        var currentCol = -1;
+        var ascending = true;
+        var dataAttrs = ['', '', '', 'manual-count', '', 'auto-count', 'rowcount', 'dead', '', '', '', ''];
+
+        headers.forEach(function(th) {
+            th.addEventListener('click', function() {
+                var col = parseInt(th.getAttribute('data-col'));
+                var sortType = th.getAttribute('data-sort');
+
+                if (currentCol === col) {
+                    ascending = !ascending;
+                } else {
+                    ascending = sortType === 'string';
+                    currentCol = col;
+                }
+
+                headers.forEach(function(h) {
+                    h.querySelector('.sort-arrow').innerHTML = '&#x25B4;&#x25BE;';
+                });
+                th.querySelector('.sort-arrow').innerHTML = ascending ? '&#x25B4;' : '&#x25BE;';
+
+                var rows = Array.from(tbody.querySelectorAll('tr'));
+                rows.sort(function(a, b) {
+                    var av, bv;
+                    if (sortType === 'string') {
+                        av = a.cells[col].textContent.trim().toLowerCase();
+                        bv = b.cells[col].textContent.trim().toLowerCase();
+                        return ascending ? av.localeCompare(bv) : bv.localeCompare(av);
+                    } else {
+                        var attr = dataAttrs[col];
+                        av = parseInt((a.getAttribute('data-' + attr) || '0').replace(/,/g, ''));
+                        bv = parseInt((b.getAttribute('data-' + attr) || '0').replace(/,/g, ''));
+                        return ascending ? av - bv : bv - av;
+                    }
+                });
+                rows.forEach(function(row) { tbody.appendChild(row); });
+            });
+        });
+    }
+})();
+</script>
+{{end}}
