@@ -3,7 +3,7 @@ module github.com/bmorton/go-pg-extras
 go 1.23.0
 
 require (
-	github.com/lib/pq v1.12.1
+	github.com/lib/pq v1.12.3
 	github.com/olekukonko/tablewriter v1.1.4
 	github.com/urfave/cli/v2 v2.27.7
 )
