@@ -17,7 +17,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up Go
         uses: ./.github/actions/setup-go
       - name: Run linter
@@ -29,7 +29,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up Go
         uses: ./.github/actions/setup-go
       - name: Run tests
@@ -58,7 +58,7 @@ jobs:
       DATABASE_URL: postgres://pgextras:pgextras@localhost:5432/pgextras_test?sslmode=disable
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up Go
         uses: ./.github/actions/setup-go
       - name: Seed test database
